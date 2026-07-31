@@ -240,6 +240,10 @@
     <!-- FOOTER -->
     <div class="footer text-center">
         <div class="container">
+            <div class="mb-2">
+                <a href="https://github.com/kelapar021-dev/jasen" target="_blank" class="text-decoration-none me-3" style="color:var(--gray-600);"><i class="bi bi-github me-1"></i>jasen — Mobile App</a>
+                <a href="https://github.com/kelapar021-dev/siksaneraka" target="_blank" class="text-decoration-none" style="color:var(--gray-600);"><i class="bi bi-github me-1"></i>siksaneraka — Backend</a>
+            </div>
             <i class="bi bi-hexagon-fill me-1" style="color:var(--blue-500);"></i> SIAKAD — Sistem Informasi Akademik
             <span class="mx-2">|</span> &copy; {{ date('Y') }}
         </div>
