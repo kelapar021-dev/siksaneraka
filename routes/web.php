@@ -71,6 +71,8 @@ Route::middleware('cek.akses')->group(function () {
     Route::post('transaksi/absensi/store',       [TransaksiController::class, 'storeAbsensi'])->name('transaksi.absensi.store');
     Route::get('transaksi/absensi/edit/{id}',    [TransaksiController::class, 'editAbsensi'])->name('transaksi.absensi.edit');
     Route::post('transaksi/absensi/update/{id}', [TransaksiController::class, 'updateAbsensi'])->name('transaksi.absensi.update');
+    Route::post('transaksi/absensi/setujui/{id}',[TransaksiController::class, 'setujuiAbsensi'])->name('transaksi.absensi.setujui');
+    Route::post('transaksi/absensi/tolak/{id}',  [TransaksiController::class, 'tolakAbsensi'])->name('transaksi.absensi.tolak');
     // FUZZY EVALUASI
     Route::get('fuzzy/definisi',              [FuzzyController::class, 'definisi'])->name('fuzzy.definisi');
     Route::get('fuzzy/evaluasi',              [FuzzyController::class, 'index'])->name('fuzzy.index');
@@ -134,8 +136,11 @@ Route::middleware('cek.akses:admin,dosen,staf_akademik')->group(function () {
     Route::get('notifikasi/edit/{id}',    [NotifikasiController::class, 'edit'])->name('notifikasi.edit');
     Route::post('notifikasi/update/{id}', [NotifikasiController::class, 'update'])->name('notifikasi.update');
 
-    // REKAP ABSENSI (dosen/admin menghitung rekap dari isian mahasiswa)
+    // REKAP ABSENSI (dosen/staf menghitung rekap dari isian mahasiswa yang disetujui)
     Route::post('transaksi/absensi/hitung-rekap', [TransaksiController::class, 'hitungRekap'])->name('transaksi.absensi.hitung-rekap');
+
+    // HAPUS TRANSAKSI ABSENSI (dosen/staf; admin diblokir di controller)
+    Route::delete('transaksi/absensi/delete/{id}', [TransaksiController::class, 'deleteAbsensi'])->name('transaksi.absensi.delete');
 });
 
 // ================= ADMIN ONLY =================
@@ -150,7 +155,6 @@ Route::middleware('cek.akses:admin')->group(function () {
     Route::get('notifikasi/delete/{id}',           [NotifikasiController::class,   'destroy'])->name('notifikasi.destroy');
     Route::get('transaksi/pembayaran/delete/{id}', [TransaksiController::class,    'deletePembayaran'])->name('transaksi.pembayaran.delete');
     Route::get('transaksi/nilai/delete/{id}',      [TransaksiController::class,    'deleteNilai'])->name('transaksi.nilai.delete');
-    Route::get('transaksi/absensi/delete/{id}',    [TransaksiController::class,    'deleteAbsensi'])->name('transaksi.absensi.delete');
     Route::get('krs/delete/{id}',                  [KrsController::class,          'destroy'])->name('krs.destroy');
     Route::get('hak-akses',                        [HakAksesController::class,     'index'])->name('hak-akses.index');
     Route::get('hak-akses/edit/{id}',              [HakAksesController::class,     'edit'])->name('hak-akses.edit');

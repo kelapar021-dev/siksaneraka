@@ -99,6 +99,8 @@ class NotifikasiController extends Controller
 
     public function create()
     {
+        if (session('user_role') === 'admin') abort(403);
+
         $mahasiswa = DB::table('mahasiswa')->get();
 
         $jadwal = DB::table('jadwal_kuliah as j')
@@ -117,6 +119,8 @@ class NotifikasiController extends Controller
 
     public function store(Request $request)
     {
+        if (session('user_role') === 'admin') abort(403);
+
         DB::table('notifikasi_peringatan')->insert([
             'mahasiswa_id'  => $request->mahasiswa_id,
             'jadwal_id'     => $request->jadwal_id,
@@ -133,6 +137,8 @@ class NotifikasiController extends Controller
 
     public function edit($id)
     {
+        if (session('user_role') === 'admin') abort(403);
+
         $notifikasi = DB::table('notifikasi_peringatan')
             ->where('id', $id)
             ->first();
@@ -156,6 +162,8 @@ class NotifikasiController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (session('user_role') === 'admin') abort(403);
+
         DB::table('notifikasi_peringatan')
             ->where('id', $id)
             ->update([

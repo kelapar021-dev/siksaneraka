@@ -222,18 +222,139 @@ class TransaksiController extends Controller
 
     public function absensi()
     {
+        $role = session('user_role', 'mahasiswa');
+
         $query = DB::table('transaksi_absensi')
             ->join('mahasiswa', 'transaksi_absensi.mahasiswa_id', '=', 'mahasiswa.id')
             ->select('transaksi_absensi.*', 'mahasiswa.nama', 'mahasiswa.nim');
 
-        if (session('user_role') === 'mahasiswa') {
+        if ($role === 'mahasiswa') {
             $query->where('transaksi_absensi.mahasiswa_id', session('mahasiswa_id'));
+        } elseif ($role === 'dosen') {
+            $query->where('transaksi_absensi.nama_dosen', session('username'));
         }
 
-        $data = $query->get();
-        $role = session('role', 'mahasiswa');
+        $data = $query->orderByDesc('transaksi_absensi.created_at')->get();
 
         return view('transaksi.absensi', compact('data', 'role'));
+    }
+
+    public function setujuiAbsensi($id)
+    {
+        $role = session('user_role');
+
+        if (!in_array($role, ['dosen', 'staf_akademik'])) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Anda tidak memiliki akses untuk memverifikasi absensi!');
+        }
+
+        $data = DB::table('transaksi_absensi')->where('id', $id)->first();
+
+        if (!$data) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Data absensi tidak ditemukan!');
+        }
+
+        if ($role === 'dosen' && $data->nama_dosen !== session('username')) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Anda hanya dapat memverifikasi absensi pada kelas Anda!');
+        }
+
+        DB::table('transaksi_absensi')
+            ->where('id', $id)
+            ->update([
+                'status_verifikasi'   => 'Disetujui',
+                'verifikator'         => session('username'),
+                'tanggal_verifikasi'  => now(),
+                'updated_at'          => now(),
+            ]);
+
+        $this->kirimNotifVerifikasi($data, 'Disetujui', null);
+
+        return redirect()->route('transaksi.absensi')
+            ->with('success', "Absensi {$data->nama_matkul} pertemuan ke-{$data->pertemuan_ke} telah disetujui. Notifikasi terkirim ke mahasiswa.");
+    }
+
+    public function tolakAbsensi(Request $request, $id)
+    {
+        $role = session('user_role');
+
+        if (!in_array($role, ['dosen', 'staf_akademik'])) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Anda tidak memiliki akses untuk memverifikasi absensi!');
+        }
+
+        $request->validate([
+            'alasan_penolakan' => 'required',
+        ], [
+            'alasan_penolakan.required' => 'Alasan penolakan wajib diisi!',
+        ]);
+
+        $data = DB::table('transaksi_absensi')->where('id', $id)->first();
+
+        if (!$data) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Data absensi tidak ditemukan!');
+        }
+
+        if ($role === 'dosen' && $data->nama_dosen !== session('username')) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Anda hanya dapat memverifikasi absensi pada kelas Anda!');
+        }
+
+        DB::table('transaksi_absensi')
+            ->where('id', $id)
+            ->update([
+                'status_verifikasi'   => 'Ditolak',
+                'verifikator'         => session('username'),
+                'tanggal_verifikasi'  => now(),
+                'alasan_penolakan'    => $request->alasan_penolakan,
+                'updated_at'          => now(),
+            ]);
+
+        $this->kirimNotifVerifikasi($data, 'Ditolak', $request->alasan_penolakan);
+
+        return redirect()->route('transaksi.absensi')
+            ->with('success', "Absensi {$data->nama_matkul} pertemuan ke-{$data->pertemuan_ke} telah ditolak. Notifikasi terkirim ke mahasiswa.");
+    }
+
+    private function kirimNotifVerifikasi($data, $status, $alasan)
+    {
+        $jadwal = DB::table('jadwal_kuliah as j')
+            ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+            ->join('dosen as d', 'j.dosen_id', '=', 'd.id')
+            ->where('mk.nama', $data->nama_matkul)
+            ->where('d.nama', $data->nama_dosen)
+            ->select('j.id')
+            ->first();
+
+        if (!$jadwal) {
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->where('mk.nama', $data->nama_matkul)
+                ->select('j.id')
+                ->first();
+        }
+
+        if (!$jadwal) return;
+
+        $statusLabel = $status === 'Disetujui' ? 'DISETUJUI' : 'DITOLAK';
+        $pesan = "Absensi Anda: {$data->nama_matkul} pertemuan ke-{$data->pertemuan_ke} ({$data->tanggal}) dengan status " .
+            "'{$data->status_hadir}' telah {$statusLabel} oleh " . session('username') . ".";
+
+        if ($status === 'Ditolak' && $alasan) {
+            $pesan .= " Alasan: {$alasan}.";
+        }
+
+        DB::table('notifikasi_peringatan')->insert([
+            'mahasiswa_id'  => $data->mahasiswa_id,
+            'jadwal_id'     => $jadwal->id,
+            'pesan'         => $pesan,
+            'tanggal_kirim' => now(),
+            'status_baca'   => 'Belum',
+            'created_at'    => now(),
+            'updated_at'    => now(),
+        ]);
     }
 
     public function createAbsensi()
@@ -260,7 +381,9 @@ class TransaksiController extends Controller
 
    public function storeAbsensi(Request $request)
 {
-    $role = session('role', 'mahasiswa');
+    if (session('user_role') === 'admin') abort(403);
+
+    $role = session('user_role', 'mahasiswa');
 
     $mahasiswaId = $role === 'mahasiswa'
         ? session('mahasiswa_id')
@@ -280,6 +403,8 @@ class TransaksiController extends Controller
 
         'status_hadir' => $request->status_hadir,
 
+        'status_verifikasi' => 'Menunggu',
+
         'keterangan' => $request->keterangan,
 
         'created_at' => now(),
@@ -289,21 +414,22 @@ class TransaksiController extends Controller
     ]);
 
     return redirect()->route('transaksi.absensi')
-        ->with('success', 'Data absensi berhasil disimpan!');
+        ->with('success', 'Data absensi berhasil disimpan dan menunggu verifikasi!');
 }
 
     public function hitungRekap()
     {
-        $role = session('role');
+        $role = session('user_role');
 
-        if (!in_array($role, ['dosen', 'admin'])) {
+        if (!in_array($role, ['dosen', 'staf_akademik'])) {
             return redirect()->route('transaksi.absensi')
                 ->with('error', 'Anda tidak memiliki akses untuk menghitung rekap!');
         }
 
         $dosenNama = $role === 'dosen' ? session('username') : null;
 
-        $query = DB::table('transaksi_absensi');
+        $query = DB::table('transaksi_absensi')
+            ->where('status_verifikasi', 'Disetujui');
         if ($dosenNama) {
             $query->where('nama_dosen', $dosenNama);
         }
@@ -399,7 +525,7 @@ class TransaksiController extends Controller
 
     public function editAbsensi($id)
     {
-        if (session('user_role') === 'mahasiswa') abort(403);
+        if (in_array(session('user_role'), ['mahasiswa', 'admin'])) abort(403);
 
         $data = DB::table('transaksi_absensi')
             ->where('id', $id)
@@ -419,7 +545,7 @@ class TransaksiController extends Controller
 
     public function updateAbsensi(Request $request, $id)
 {
-    if (session('user_role') === 'mahasiswa') abort(403);
+    if (in_array(session('user_role'), ['mahasiswa', 'admin'])) abort(403);
 
     DB::table('transaksi_absensi')
         ->where('id', $id)
@@ -446,7 +572,7 @@ class TransaksiController extends Controller
 
     public function deleteAbsensi($id)
     {
-        if (session('user_role') === 'mahasiswa') abort(403);
+        if (in_array(session('user_role'), ['mahasiswa', 'admin'])) abort(403);
 
         DB::table('transaksi_absensi')
             ->where('id', $id)

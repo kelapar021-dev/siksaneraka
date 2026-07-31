@@ -160,18 +160,19 @@ class TransaksiController extends Controller
         ]);
 
         DB::table('transaksi_absensi')->insert([
-            'mahasiswa_id' => $mahasiswaId,
-            'nama_matkul'  => $request->nama_matkul,
-            'nama_dosen'   => $request->nama_dosen,
-            'tanggal'      => $request->tanggal,
-            'pertemuan_ke' => $request->pertemuan_ke,
-            'status_hadir' => $request->status_hadir,
-            'keterangan'   => $request->keterangan,
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'mahasiswa_id'     => $mahasiswaId,
+            'nama_matkul'      => $request->nama_matkul,
+            'nama_dosen'       => $request->nama_dosen,
+            'tanggal'          => $request->tanggal,
+            'pertemuan_ke'     => $request->pertemuan_ke,
+            'status_hadir'     => $request->status_hadir,
+            'status_verifikasi' => 'Menunggu',
+            'keterangan'       => $request->keterangan,
+            'created_at'       => now(),
+            'updated_at'       => now(),
         ]);
 
-        return response()->json(['message' => 'Absensi berhasil disimpan']);
+        return response()->json(['message' => 'Absensi berhasil disimpan, menunggu verifikasi dosen.']);
     }
 
     public function absensiPertemuan()

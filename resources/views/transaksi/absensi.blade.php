@@ -272,6 +272,54 @@
             font-weight: 600;
         }
 
+        .badge-menunggu{
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-disetujui{
+            background: rgba(67,233,123,0.2);
+            color: #43e97b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-ditolak{
+            background: rgba(255,65,108,0.2);
+            color: #ff416c;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-setuju{
+            background: rgba(67,233,123,0.2);
+            color: #43e97b;
+            border: 1px solid rgba(67,233,123,0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .btn-tolak{
+            background: rgba(255,65,108,0.2);
+            color: #ff416c;
+            border: 1px solid rgba(255,65,108,0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
         .empty-state{
             text-align: center;
             padding: 60px 20px;
@@ -287,6 +335,13 @@
             background: rgba(67,233,123,0.15);
             border: 1px solid rgba(67,233,123,0.3);
             color: #43e97b;
+            border-radius: 12px;
+        }
+
+        .alert-danger{
+            background: rgba(255,65,108,0.15);
+            border: 1px solid rgba(255,65,108,0.3);
+            color: #ff416c;
             border-radius: 12px;
         }
     </style>
@@ -315,6 +370,12 @@
     @if(session('success'))
     <div class="alert alert-success mb-4">
         {{ session('success') }}
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger mb-4">
+        {{ session('error') }}
     </div>
     @endif
 
@@ -361,7 +422,7 @@
                 placeholder="🔍 Cari data..."
             >
 
-            @if($role === 'dosen' || $role === 'admin')
+            @if($role === 'dosen' || $role === 'staf_akademik')
             <form
                 action="{{ route('transaksi.absensi.hitung-rekap') }}"
                 method="POST"
@@ -375,10 +436,12 @@
             </form>
             @endif
 
+            @if($role !== 'admin')
             <a href="{{ route('transaksi.absensi.create') }}" class="btn-tambah">
                 <i class="bi bi-plus-circle"></i>
                 {{ $role === 'mahasiswa' ? 'Isi Absensi Saya' : 'Tambah Absensi' }}
             </a>
+            @endif
 
         </div>
 
@@ -398,8 +461,9 @@
                     <th>Tanggal</th>
                     <th>Pertemuan</th>
                     <th>Status</th>
+                    <th>Verifikasi</th>
                     <th>Keterangan</th>
-                    @if($role !== 'mahasiswa')<th>Aksi</th>@endif
+                    @if($role === 'dosen' || $role === 'staf_akademik')<th>Aksi</th>@endif
                 </tr>
             </thead>
 
@@ -450,12 +514,52 @@
 
                     </td>
 
+                    <td>
+
+                        @if($item->status_verifikasi == 'Disetujui')
+                            <span class="badge-disetujui">✔ Disetujui</span>
+
+                        @elseif($item->status_verifikasi == 'Ditolak')
+                            <span class="badge-ditolak" title="{{ $item->alasan_penolakan ?? '' }}">✘ Ditolak</span>
+
+                        @else
+                            <span class="badge-menunggu">⏳ Menunggu</span>
+                        @endif
+
+                    </td>
+
                     <td>{{ $item->keterangan ?? '-' }}</td>
 
-                    @if($role !== 'mahasiswa')
+                    @if($role === 'dosen' || $role === 'staf_akademik')
                     <td>
 
                         <div class="d-flex justify-content-center gap-2">
+
+                            @if($item->status_verifikasi == 'Menunggu')
+
+                            <form
+                                action="{{ route('transaksi.absensi.setujui', $item->id) }}"
+                                method="POST"
+                                onsubmit="return confirm('Setujui absensi ini?')"
+                            >
+                                @csrf
+                                <button type="submit" class="btn-setuju">
+                                    <i class="bi bi-check-circle"></i>
+                                    Setuju
+                                </button>
+                            </form>
+
+                            <button
+                                type="button"
+                                class="btn-tolak"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalTolak{{ $item->id }}"
+                            >
+                                <i class="bi bi-x-circle"></i>
+                                Tolak
+                            </button>
+
+                            @else
 
                             <a
                                 href="{{ route('transaksi.absensi.edit', $item->id) }}"
@@ -479,6 +583,8 @@
                                 </button>
                             </form>
 
+                            @endif
+
                         </div>
 
                     </td>
@@ -489,7 +595,7 @@
                 @empty
 
                 <tr>
-                    <td colspan="10">
+                    <td colspan="11">
 
                         <div class="empty-state">
                             <i class="bi bi-inbox"></i>
@@ -527,6 +633,45 @@ document.getElementById('searchInput').addEventListener('keyup', function(){
 });
 
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+@foreach($data as $item)
+@if($role === 'dosen' || $role === 'staf_akademik')
+<div class="modal fade" id="modalTolak{{ $item->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ route('transaksi.absensi.tolak', $item->id) }}" method="POST">
+            @csrf
+            <div class="modal-content" style="background:#1a1735;color:white;border:1px solid rgba(255,255,255,0.1);border-radius:20px;">
+                <div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <h5 class="modal-title">Tolak Absensi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size:13px;color:rgba(255,255,255,0.7);">
+                        {{ $item->nama_matkul }} — Pertemuan {{ $item->pertemuan_ke }} ({{ $item->tanggal }})
+                        <br>{{ $item->nim }} · {{ $item->nama }}
+                    </p>
+                    <label class="form-label" style="font-size:13px;">Alasan Penolakan</label>
+                    <textarea
+                        name="alasan_penolakan"
+                        class="form-control"
+                        rows="3"
+                        required
+                        placeholder="Isi alasan mengapa absensi ini ditolak"
+                        style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.15);"
+                    ></textarea>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,0.1);">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tolak Absensi</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+@endforeach
 
 </body>
 </html>
