@@ -39,8 +39,34 @@ class AbsensiController extends Controller
         }
         // Admin lihat semua (tidak ada filter tambahan)
 
-        $absensi = $query->get();
-        return view('absensi.index', compact('absensi', 'userRole'));
+        $absensi = $query->orderByDesc('absensi.created_at')->get();
+
+        // Mahasiswa juga melihat riwayat self-report beserta status verifikasi
+        $selfReport = [];
+        if ($userRole === 'mahasiswa') {
+            $selfReport = DB::table('transaksi_absensi')
+                ->join('mahasiswa', 'transaksi_absensi.mahasiswa_id', '=', 'mahasiswa.id')
+                ->where('transaksi_absensi.mahasiswa_id', $mahasiswaId ?? 0)
+                ->select(
+                    'transaksi_absensi.id',
+                    'transaksi_absensi.mahasiswa_id',
+                    'transaksi_absensi.nama_matkul',
+                    'transaksi_absensi.nama_dosen',
+                    'transaksi_absensi.tanggal',
+                    'transaksi_absensi.pertemuan_ke',
+                    'transaksi_absensi.status_hadir',
+                    'transaksi_absensi.status_verifikasi',
+                    'transaksi_absensi.verifikator',
+                    'transaksi_absensi.alasan_penolakan',
+                    'transaksi_absensi.keterangan',
+                    'mahasiswa.nama as nama_mahasiswa',
+                    'mahasiswa.nim'
+                )
+                ->orderByDesc('transaksi_absensi.created_at')
+                ->get();
+        }
+
+        return view('absensi.index', compact('absensi', 'userRole', 'selfReport'));
     }
 
     public function create()

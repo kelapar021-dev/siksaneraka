@@ -261,6 +261,12 @@
             display: inline-flex; align-items: center; gap: 3px;
         }
 
+        /* Verification status pills */
+        .badge-vf { padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 600; display: inline-block; }
+        .vf-menunggu  { background: #fef9c3; color: #a16207; }
+        .vf-disetujui { background: #dcfce7; color: #15803d; }
+        .vf-ditolak   { background: #fee2e2; color: #b91c1c; }
+
         .alert-success-custom {
             background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d;
             border-radius: var(--radius-sm); padding: 11px 16px;
@@ -414,7 +420,7 @@
             @elseif($role == 'mahasiswa')
             <div class="info-note info-blue">
                 <i class="bi bi-info-circle-fill"></i>
-                Sebagai <strong>Mahasiswa</strong>, Anda hanya dapat melihat rekaman absensi Anda sendiri.
+                Sebagai <strong>Mahasiswa</strong>, Anda dapat menambahkan absensi untuk diri sendiri. Data akan diverifikasi oleh Dosen atau Staf TU sebelum masuk rekap.
             </div>
             @endif
 
@@ -434,7 +440,7 @@
                         </span>
                         @if($role=='admin') Lihat & Hapus (R, D)
                         @elseif($role=='dosen') Input, Lihat & Edit (C, R, U)
-                        @else Absensi Saya (R)
+                        @else Absensi Saya (C, R)
                         @endif
                     </div>
                 </div>
@@ -444,11 +450,15 @@
                         <i class="bi bi-search"></i>
                         <input type="text" class="search-box" id="searchInput" placeholder="Cari absensi...">
                     </div>
-                    @if($role == 'dosen')
-                    <a href="{{ route('absensi.create') }}" class="btn-tambah">
-                        <i class="bi bi-plus-circle-fill"></i> Input Absensi
-                    </a>
-                    @endif
+                        @if($role == 'dosen')
+                        <a href="{{ route('absensi.create') }}" class="btn-tambah">
+                            <i class="bi bi-plus-circle-fill"></i> Input Absensi
+                        </a>
+                        @elseif($role == 'mahasiswa')
+                        <a href="{{ route('transaksi.absensi.create') }}" class="btn-tambah">
+                            <i class="bi bi-plus-circle-fill"></i> Isi Absensi Saya
+                        </a>
+                        @endif
                 </div>
             </div>
 
@@ -521,6 +531,74 @@
                     </tbody>
                 </table>
             </div>
+
+            @if($role == 'mahasiswa' && count($selfReport) > 0)
+            <div class="table-wrap" style="border-top: 2px solid var(--gray-100); margin-top: 8px;">
+                <div style="padding: 14px 22px; background: var(--blue-50); border-bottom: 1px solid var(--blue-100);">
+                    <h5 style="font-size: 14px; font-weight: 700; color: var(--blue-800); margin: 0;">
+                        <i class="bi bi-person-check-fill me-1"></i> Absensi Saya (Self-Report) — Menunggu Verifikasi
+                    </h5>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>NIM</th>
+                            <th>Nama Mahasiswa</th>
+                            <th>Mata Kuliah</th>
+                            <th>Dosen</th>
+                            <th>Pertemuan</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Verifikasi</th>
+                            <th>Keterangan</th>
+                            <th style="width: 140px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($selfReport as $item)
+                        <tr>
+                            <td style="color:var(--gray-400);font-weight:500;">{{ $loop->iteration }}</td>
+                            <td><span class="badge-nim">{{ $item->nim }}</span></td>
+                            <td style="font-weight:600;color:var(--blue-900); text-align: left;">{{ $item->nama_mahasiswa }}</td>
+                            <td style="text-align: left;">{{ $item->nama_matkul }}</td>
+                            <td style="text-align: left;">{{ $item->nama_dosen }}</td>
+                            <td><span class="badge-meet">Ke-{{ $item->pertemuan_ke }}</span></td>
+                            <td style="color:var(--gray-600);">{{ $item->tanggal }}</td>
+                            <td>
+                                @if($item->status_hadir=='Hadir') <span class="badge-status badge-hadir">✔ Hadir</span>
+                                @elseif($item->status_hadir=='Izin') <span class="badge-status badge-izin">📩 Izin</span>
+                                @elseif($item->status_hadir=='Sakit') <span class="badge-status badge-sakit">🏥 Sakit</span>
+                                @else <span class="badge-status badge-alpha">✘ Alfa</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($item->status_verifikasi=='Disetujui') <span class="badge-vf vf-disetujui">✔ Disetujui</span>
+                                @elseif($item->status_verifikasi=='Ditolak') <span class="badge-vf vf-ditolak" title="{{ $item->alasan_penolakan ?? '' }}">✘ Ditolak</span>
+                                @else <span class="badge-vf vf-menunggu">⏳ Menunggu</span>
+                                @endif
+                            </td>
+                            <td style="text-align: left; max-width: 180px;" class="text-truncate" title="{{ $item->keterangan ?? '-' }}">
+                                {{ $item->keterangan ?? '-' }}
+                            </td>
+                            <td>
+                                <span class="readonly-badge"><i class="bi bi-eye-fill"></i> Hanya Lihat</span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="11">
+                                <div class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>Belum ada absensi self-report</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @endif
 
         </div>
     </div>
