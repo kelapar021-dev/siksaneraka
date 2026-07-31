@@ -187,13 +187,22 @@
                     Pertemuan Ke
                 </label>
 
-                <input
-                    type="number"
-                    name="pertemuan_ke"
-                    class="form-control"
-                    value="{{ $data->pertemuan_ke }}"
-                    required
-                >
+                <select name="pertemuan_ke" class="form-select" required>
+
+                    <option value="">-- Pilih Pertemuan --</option>
+
+                    @foreach($pertemuan as $p)
+
+                        <option
+                            value="{{ $p->pertemuan_ke }}"
+                            {{ $data->pertemuan_ke == $p->pertemuan_ke ? 'selected' : '' }}
+                        >
+                            {{ $p->nama_matkul }} - Pertemuan ke-{{ $p->pertemuan_ke }} ({{ $p->tanggal }})
+                        </option>
+
+                    @endforeach
+
+                </select>
 
             </div>
 

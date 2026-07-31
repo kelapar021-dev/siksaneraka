@@ -234,7 +234,14 @@ class TransaksiController extends Controller
     {
         $mahasiswa = DB::table('mahasiswa')->get();
 
-        return view('transaksi.tambah-absensi', compact('mahasiswa'));
+        $pertemuan = DB::table('pertemuan')
+            ->join('jadwal_kuliah', 'pertemuan.jadwal_id', '=', 'jadwal_kuliah.id')
+            ->join('mata_kuliah', 'jadwal_kuliah.mata_kuliah_id', '=', 'mata_kuliah.id')
+            ->select('pertemuan.*', 'mata_kuliah.nama as nama_matkul')
+            ->orderBy('pertemuan.pertemuan_ke')
+            ->get();
+
+        return view('transaksi.tambah-absensi', compact('mahasiswa', 'pertemuan'));
     }
 
    public function storeAbsensi(Request $request)
@@ -272,7 +279,14 @@ class TransaksiController extends Controller
 
         $mahasiswa = DB::table('mahasiswa')->get();
 
-        return view('transaksi.edit-absensi', compact('data', 'mahasiswa'));
+        $pertemuan = DB::table('pertemuan')
+            ->join('jadwal_kuliah', 'pertemuan.jadwal_id', '=', 'jadwal_kuliah.id')
+            ->join('mata_kuliah', 'jadwal_kuliah.mata_kuliah_id', '=', 'mata_kuliah.id')
+            ->select('pertemuan.*', 'mata_kuliah.nama as nama_matkul')
+            ->orderBy('pertemuan.pertemuan_ke')
+            ->get();
+
+        return view('transaksi.edit-absensi', compact('data', 'mahasiswa', 'pertemuan'));
     }
 
     public function updateAbsensi(Request $request, $id)
