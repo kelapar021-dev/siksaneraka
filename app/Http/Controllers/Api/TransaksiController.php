@@ -130,4 +130,67 @@ class TransaksiController extends Controller
 
         return response()->json(['data' => $data]);
     }
+
+    // ================= ABSENSI (SELF-REPORT) =================
+
+    public function absensi(Request $request)
+    {
+        $mahasiswaId = $request->get('mahasiswa_id');
+
+        $data = DB::table('transaksi_absensi')
+            ->join('mahasiswa', 'transaksi_absensi.mahasiswa_id', '=', 'mahasiswa.id')
+            ->where('transaksi_absensi.mahasiswa_id', $mahasiswaId)
+            ->select('transaksi_absensi.*', 'mahasiswa.nama as nama_mahasiswa', 'mahasiswa.nim')
+            ->orderBy('transaksi_absensi.tanggal', 'desc')
+            ->get();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function storeAbsensi(Request $request)
+    {
+        $mahasiswaId = $request->get('mahasiswa_id');
+
+        $request->validate([
+            'nama_matkul'  => 'required',
+            'nama_dosen'   => 'required',
+            'tanggal'      => 'required|date',
+            'pertemuan_ke' => 'required|integer',
+            'status_hadir' => 'required|in:Hadir,Izin,Sakit,Alfa',
+        ]);
+
+        DB::table('transaksi_absensi')->insert([
+            'mahasiswa_id' => $mahasiswaId,
+            'nama_matkul'  => $request->nama_matkul,
+            'nama_dosen'   => $request->nama_dosen,
+            'tanggal'      => $request->tanggal,
+            'pertemuan_ke' => $request->pertemuan_ke,
+            'status_hadir' => $request->status_hadir,
+            'keterangan'   => $request->keterangan,
+            'created_at'   => now(),
+            'updated_at'   => now(),
+        ]);
+
+        return response()->json(['message' => 'Absensi berhasil disimpan']);
+    }
+
+    public function absensiPertemuan()
+    {
+        $pertemuan = DB::table('pertemuan')
+            ->join('jadwal_kuliah', 'pertemuan.jadwal_id', '=', 'jadwal_kuliah.id')
+            ->join('mata_kuliah', 'jadwal_kuliah.mata_kuliah_id', '=', 'mata_kuliah.id')
+            ->join('dosen', 'jadwal_kuliah.dosen_id', '=', 'dosen.id')
+            ->select(
+                'pertemuan.id',
+                'pertemuan.pertemuan_ke',
+                'pertemuan.tanggal',
+                'pertemuan.topik',
+                'mata_kuliah.nama as nama_matkul',
+                'dosen.nama as nama_dosen'
+            )
+            ->orderBy('pertemuan.tanggal', 'desc')
+            ->get();
+
+        return response()->json(['data' => $pertemuan]);
+    }
 }

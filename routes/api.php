@@ -47,6 +47,10 @@ Route::middleware(['cors', 'api.auth'])->group(function () {
     Route::get('transaksi/nilai',       [TransaksiController::class, 'nilai']);
     Route::get('transaksi/nilai/{id}',  [TransaksiController::class, 'nilaiDetail']);
 
+    Route::get('transaksi/absensi',             [TransaksiController::class, 'absensi']);
+    Route::post('transaksi/absensi',            [TransaksiController::class, 'storeAbsensi']);
+    Route::get('transaksi/absensi/pertemuan',   [TransaksiController::class, 'absensiPertemuan']);
+
     Route::get('fuzzy',             [FuzzyController::class, 'index']);
     Route::get('fuzzy/{id}',        [FuzzyController::class, 'show']);
 });
