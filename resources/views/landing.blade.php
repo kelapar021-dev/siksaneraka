@@ -69,13 +69,11 @@
         }
         .btn-outline-custom:hover { border-color: var(--blue-500); color: var(--blue-500); }
 
-        .hero-visual {
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
+        .hero-visual { position: relative; display: flex; align-items: center; justify-content: center; }
         .hero-card {
-            background: #fff; border-radius: 20px; padding: 32px;
+            background: #fff; border-radius: 20px; padding: 28px;
             box-shadow: 0 20px 60px rgba(13,46,110,0.12);
-            border: 1px solid var(--gray-200); width: 100%; max-width: 380px;
+            border: 1px solid var(--gray-200); width: 100%; max-width: 420px;
         }
         .hero-card-icon {
             width: 56px; height: 56px; border-radius: 14px;
@@ -86,7 +84,7 @@
         .hero-card h5 { font-weight: 700; color: var(--navy); font-size: 16px; margin-bottom: 4px; }
         .hero-card .text-muted { font-size: 13px; color: var(--gray-400) !important; }
         .hero-card .small-stat { font-size: 11px; font-weight: 600; color: var(--gray-400); }
-        .stat-number { font-size: 22px; font-weight: 800; color: var(--navy); }
+        .stat-number { font-size: 20px; font-weight: 800; color: var(--navy); }
 
         /* GENERIC SECTION */
         .section { padding: 70px 0; }
@@ -155,6 +153,59 @@
         .check-list li i { color: var(--blue-500); margin-top: 3px; }
         .check-list li strong { color: var(--navy); }
 
+        /* FLOWCHART STATIS */
+        .flow-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .flow-node {
+            background: #fff; border: 2px solid var(--blue-400); border-radius: 12px;
+            padding: 12px 20px; text-align: center; width: 100%; max-width: 340px;
+        }
+        .flow-node h6 { font-weight: 700; color: var(--navy); font-size: 14px; margin-bottom: 2px; }
+        .flow-node p { font-size: 12px; color: var(--gray-600); margin: 0; line-height: 1.5; }
+        .flow-decision {
+            background: var(--blue-50); border: 2px dashed var(--blue-500);
+            border-radius: 12px; padding: 12px 20px; text-align: center; width: 100%; max-width: 340px;
+        }
+        .flow-decision h6 { font-weight: 700; color: var(--navy); font-size: 14px; margin-bottom: 2px; }
+        .flow-decision p { font-size: 12px; color: var(--gray-600); margin: 0; line-height: 1.5; }
+        .flow-start {
+            background: var(--navy); color: #fff; border-radius: 40px;
+            padding: 8px 24px; font-weight: 700; font-size: 14px; width: 100%; max-width: 240px; text-align: center;
+        }
+        .flow-end {
+            background: #F0FDF4; border: 2px solid #16A34A; color: #166534;
+            border-radius: 40px; padding: 8px 24px; font-weight: 700; font-size: 14px;
+            width: 100%; max-width: 240px; text-align: center;
+        }
+        .flow-arrow { color: var(--gray-400); font-size: 20px; padding: 6px 0; line-height: 1; position: relative; }
+        .flow-label {
+            font-size: 11px; font-weight: 800; color: var(--blue-500);
+            position: absolute; top: -2px; right: 0; background: var(--blue-50);
+            padding: 1px 8px; border-radius: 10px;
+        }
+        .flow-branch { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; align-items: stretch; }
+        .flow-col { display: flex; flex-direction: column; align-items: center; flex: 0 1 320px; }
+        .flow-col-title {
+            font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--blue-500); margin-bottom: 8px; background: var(--blue-50);
+            padding: 4px 14px; border-radius: 20px;
+        }
+        .flow-arch {
+            display: flex; flex-direction: column; gap: 16px; align-items: center;
+        }
+        .flow-arch-row { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .arch-node {
+            background: #fff; border: 2px solid var(--blue-400); border-radius: 12px;
+            padding: 10px 18px; font-size: 13px; font-weight: 700; color: var(--navy);
+            text-align: center; min-width: 130px;
+        }
+        .arch-node.db { border-color: #16A34A; color: #166534; background: #F0FDF4; }
+        .arch-node.ngrok { border-style: dashed; border-color: var(--gray-400); color: var(--gray-600); }
+        .arch-arrow { color: var(--gray-400); font-size: 18px; }
+
+        /* TABS */
+        .nav-pills .nav-link { color: var(--gray-600); background: var(--gray-100); font-weight: 600; font-size: 13px; border-radius: 10px; }
+        .nav-pills .nav-link.active { background: var(--blue-500); color: #fff; }
+
         /* FAQ */
         .accordion-item { border: 1px solid var(--gray-200); border-radius: 12px !important; overflow: hidden; margin-bottom: 12px; }
         .accordion-button { font-weight: 600; color: var(--navy); font-size: 15px; background: #fff; }
@@ -197,10 +248,20 @@
             .hero p { margin-left: auto; margin-right: auto; }
             .hero-actions { justify-content: center; }
             .hero-visual { margin-top: 40px; }
+            .flow-branch { gap: 18px; }
         }
     </style>
 </head>
 <body>
+    @php
+        $stats = [
+            'mahasiswa'  => \Illuminate\Support\Facades\DB::table('mahasiswa')->count(),
+            'dosen'      => \Illuminate\Support\Facades\DB::table('dosen')->count(),
+            'matkul'     => \Illuminate\Support\Facades\DB::table('mata_kuliah')->count(),
+            'jadwal'     => \Illuminate\Support\Facades\DB::table('jadwal_kuliah')->count(),
+        ];
+    @endphp
+
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
@@ -213,6 +274,7 @@
                     <li class="nav-item"><a class="nav-link" href="#tentang">Tentang</a></li>
                     <li class="nav-item"><a class="nav-link" href="#keunggulan">Keunggulan</a></li>
                     <li class="nav-item"><a class="nav-link" href="#fitur">Fitur</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#flowchart">Flowchart</a></li>
                     <li class="nav-item"><a class="nav-link" href="#modul">Modul</a></li>
                     <li class="nav-item"><a class="nav-link" href="#arsitektur">Arsitektur</a></li>
                     <li class="nav-item"><a class="nav-link" href="#api">API</a></li>
@@ -234,7 +296,7 @@
                 <div class="col-lg-6">
                     <div class="hero-badge"><i class="bi bi-lightning-fill"></i> Platform Akademik Terintegrasi</div>
                     <h1>Portal <span>Informasi Akademik</span> Cepat &amp; Andal</h1>
-                    <p>Akses KRS, jadwal kuliah, nilai, absensi, dan informasi akademik lainnya dalam satu platform terpadu — kapan saja, di mana saja.</p>
+                    <p>Kelola KRS, jadwal kuliah, absensi mandiri, rekap kehadiran, nilai, pembayaran, dan evaluasi fuzzy dalam satu sistem — berbasis web (Laravel) dan aplikasi mobile (Flutter).</p>
                     <div class="hero-actions">
                         <a href="/login" class="btn btn-primary-custom"><i class="bi bi-box-arrow-in-right me-1"></i>Masuk ke SIAKAD</a>
                         <a href="/siakad.apk" class="btn btn-outline-custom" download><i class="bi bi-download me-1"></i>Download APK</a>
@@ -244,13 +306,14 @@
                     <div class="hero-visual">
                         <div class="hero-card">
                             <div class="hero-card-icon"><i class="bi bi-graph-up-arrow"></i></div>
-                            <h5>Ringkasan Akademik</h5>
-                            <p class="text-muted">Informasi cepat nilai, kehadiran, dan jadwal Anda.</p>
+                            <h5>Ringkasan Sistem</h5>
+                            <p class="text-muted">Data akademik yang dikelola dalam platform.</p>
                             <hr class="my-3">
-                            <div class="d-flex justify-content-between">
-                                <div><div class="stat-number">8</div><div class="small-stat">Mata Kuliah</div></div>
-                                <div><div class="stat-number">3.85</div><div class="small-stat">IPK</div></div>
-                                <div><div class="stat-number">96%</div><div class="small-stat">Kehadiran</div></div>
+                            <div class="d-flex justify-content-between text-center">
+                                <div><div class="stat-number">{{ $stats['mahasiswa'] }}</div><div class="small-stat">Mahasiswa</div></div>
+                                <div><div class="stat-number">{{ $stats['dosen'] }}</div><div class="small-stat">Dosen</div></div>
+                                <div><div class="stat-number">{{ $stats['matkul'] }}</div><div class="small-stat">Mata Kuliah</div></div>
+                                <div><div class="stat-number">{{ $stats['jadwal'] }}</div><div class="small-stat">Jadwal</div></div>
                             </div>
                         </div>
                     </div>
@@ -272,28 +335,28 @@
                     <div class="info-card">
                         <div class="feature-icon" style="background:var(--blue-50);color:var(--blue-500);"><i class="bi bi-signpost-2"></i></div>
                         <h6>Latar Belakang</h6>
-                        <p>Pengelolaan akademik yang masih manual — KRS, absensi, nilai, dan pembayaran tersebar di banyak tempat — membuat data sulit dipantau. SIAKAD hadir untuk memusatkan seluruh proses dalam satu sistem berbasis web dan mobile.</p>
+                        <p>Pengelolaan akademik manual — KRS, absensi, nilai, dan pembayaran tersebar di banyak tempat — membuat data sulit dipantau. SIAKAD memusatkan seluruh proses dalam satu sistem web (siksaneraka) dan mobile (jasen).</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="info-card">
                         <div class="feature-icon" style="background:var(--blue-50);color:var(--blue-500);"><i class="bi bi-bullseye"></i></div>
                         <h6>Tujuan</h6>
-                        <p>Menyediakan sistem informasi akademik yang cepat, akurat, dan mudah diakses — mulai dari pendaftaran KRS, penjadwalan, absensi mandiri mahasiswa, rekap kehadiran, hingga evaluasi kelulusan berbasis logika fuzzy.</p>
+                        <p>Menyediakan informasi akademik yang cepat, akurat, dan mudah diakses — mulai dari pendaftaran KRS, penjadwalan, absensi mandiri, rekap kehadiran dengan notifikasi peringatan, hingga evaluasi kelulusan berbasis logika fuzzy.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="info-card">
                         <div class="feature-icon" style="background:var(--blue-50);color:var(--blue-500);"><i class="bi bi-people"></i></div>
                         <h6>Target Pengguna</h6>
-                        <p>Admin akademik, staf akademik, dosen, dan mahasiswa. Masing-masing mendapat peran (role) dan hak akses yang berbeda, baik di aplikasi web maupun aplikasi mobile mahasiswa.</p>
+                        <p>Admin, staf akademik, dosen, dan mahasiswa. Masing-masing memiliki peran dan hak akses berbeda — {{ $stats['mahasiswa'] }} mahasiswa, {{ $stats['dosen'] }} dosen, {{ $stats['matkul'] }} mata kuliah, {{ $stats['jadwal'] }} jadwal kuliah terkelola dalam sistem.</p>
                     </div>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <div class="info-card">
                         <div class="feature-icon" style="background:var(--blue-50);color:var(--blue-500);"><i class="bi bi-stars"></i></div>
                         <h6>Manfaat Utama</h6>
-                        <p>Data akademik terpusat dan transparan, proses KRS dan absensi lebih cepat, rekap kehadiran otomatis dengan notifikasi peringatan, evaluasi kelulusan objektif, dan akses kapan saja lewat aplikasi Android.</p>
+                        <p>Data akademik terpusat dan transparan, proses KRS dan absensi lebih cepat, rekap kehadiran otomatis dengan notifikasi, evaluasi kelulusan objektif, serta akses kapan saja lewat aplikasi Android.</p>
                     </div>
                 </div>
             </div>
@@ -311,11 +374,11 @@
             <div class="row g-3">
                 @php
                     $ungguls = [
-                        ['bi-phone', 'Web + Mobile Terpadu', 'Kelola dari panel web; mahasiswa mengakses via aplikasi Android dan versi browser.'],
-                        ['bi-pencil-square', 'Absensi Mandiri (Self-Report)', 'Mahasiswa dapat mengisi kehadiran sendiri per pertemuan; dosen tinggal menghitung rekap.'],
-                        ['bi-bell', 'Notifikasi Peringatan', 'Kehadiran di bawah 75% memicu notifikasi peringatan otomatis ke mahasiswa, tanpa duplikasi.'],
+                        ['bi-phone', 'Web + Mobile Terpadu', 'Kelola dari panel web (siksaneraka); mahasiswa mengakses via aplikasi Android dan versi browser (jasen).'],
+                        ['bi-pencil-square', 'Absensi Mandiri (Self-Report)', 'Mahasiswa mengisi kehadiran sendiri per pertemuan; dosen tinggal menghitung rekap dari data tersebut.'],
+                        ['bi-bell', 'Notifikasi Peringatan', 'Kehadiran di bawah 75% memicu notifikasi peringatan otomatis ke mahasiswa, tanpa duplikasi pesan.'],
                         ['bi-cpu', 'Evaluasi Fuzzy Tsukamoto', 'Penilaian kelulusan objektif dari kehadiran, nilai tugas, dan keaktifan diskusi.'],
-                        ['bi-shield-lock', 'Role-Based Access Control', 'Hak akses per peran (admin, staf, dosen, mahasiswa) hingga tingkat modul dan aksi.'],
+                        ['bi-shield-lock', 'Role-Based Access Control', 'Hak akses per peran (admin, staf_akademik, dosen, mahasiswa) hingga tingkat modul dan aksi.'],
                         ['bi-box-seam', 'Mudah Didistribusikan', 'Akses internet melalui ngrok; build web dan APK siap unduh langsung dari server.'],
                     ];
                 @endphp
@@ -337,17 +400,17 @@
         <div class="container text-center">
             <div class="section-label"><i class="bi bi-grid-3x3-gap-fill"></i> Fitur Utama</div>
             <h2 class="section-title">Kelola Akademik Lebih Mudah</h2>
-            <p class="section-sub">Semua fitur yang Anda butuhkan untuk memantau perkuliahan dalam satu dashboard.</p>
+            <p class="section-sub">Semua fitur yang tersedia untuk memantau perkuliahan dalam satu dashboard.</p>
             <div class="row g-3">
                 @php
                     $fiturs = [
                         ['bi-book', 'KRS Online', 'Ajukan dan monitor Kartu Rencana Studi setiap semester.'],
-                        ['bi-calendar-check', 'Jadwal Kuliah', 'Lihat jadwal perkuliahan harian, mingguan, atau per ruangan.'],
-                        ['bi-grading', 'Nilai & IPK', 'Cek nilai setiap mata kuliah dan pantau perkembangan IPK.'],
-                        ['bi-payments', 'Pembayaran', 'Informasi status pembayaran SPP dan biaya akademik lain.'],
+                        ['bi-calendar-check', 'Jadwal Kuliah', 'Lihat jadwal perkuliahan harian atau per ruangan.'],
+                        ['bi-grading', 'Nilai & IPK', 'Cek nilai setiap mata kuliah dan status kelulusan.'],
+                        ['bi-payments', 'Pembayaran', 'Informasi status pembayaran SPP, UKT, dan biaya lainnya.'],
                         ['bi-checklist', 'Absensi', 'Rekam dan lihat riwayat kehadiran perkuliahan.'],
-                        ['bi-bar-chart', 'Rekap & Laporan', 'Laporan absensi, grafik kehadiran, dan evaluasi fuzzy.'],
                         ['bi-pencil-square', 'Absensi Mandiri', 'Mahasiswa mengisi kehadiran per pertemuan dari web maupun aplikasi.'],
+                        ['bi-bar-chart', 'Rekap & Laporan', 'Rekap kehadiran per mata kuliah dan persentase kehadiran.'],
                         ['bi-cpu', 'Evaluasi Fuzzy', 'Hasil evaluasi kelulusan dengan metode Tsukamoto.'],
                     ];
                 @endphp
@@ -364,50 +427,150 @@
         </div>
     </section>
 
-    <!-- ALUR PENGGUNAAN -->
-    <section class="section section-alt" id="alur">
+    <!-- FLOWCHART -->
+    <section class="section section-alt" id="flowchart">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-5">
-                    <div class="section-label"><i class="bi bi-diagram-3-fill"></i> Alur Penggunaan</div>
-                    <h2 class="section-title">Bagaimana SIAKAD Bekerja?</h2>
-                    <p class="section-sub" style="margin-bottom:0;">Lima langkah sederhana dari login hingga evaluasi kelulusan.</p>
+            <div class="text-center">
+                <div class="section-label"><i class="bi bi-diagram-3-fill"></i> Flowchart</div>
+                <h2 class="section-title">Alur Proses Sistem</h2>
+                <p class="section-sub">Diagram alur login, absensi mandiri, rekap, evaluasi fuzzy, dan aplikasi mobile.</p>
+            </div>
+
+            <ul class="nav nav-pills justify-content-center mb-4 gap-2" id="flowTabs" role="tablist">
+                <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#flow-login" type="button">Alur Login</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#flow-absensi" type="button">Self-Report Absensi</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#flow-rekap" type="button">Rekap &amp; Notifikasi</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#flow-fuzzy" type="button">Evaluasi Fuzzy</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#flow-mobile" type="button">Aplikasi Mobile</button></li>
+            </ul>
+
+            <div class="tab-content bg-white border rounded-4 p-4 p-md-5 shadow-sm">
+                <!-- 1. ALUR LOGIN -->
+                <div class="tab-pane fade show active" id="flow-login" role="tabpanel">
+                    <div class="flow-wrap">
+                        <div class="flow-start"><i class="bi bi-play-fill me-1"></i>Buka Halaman Login</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Input Kredensial</h6><p>Web: username + password &nbsp;|&nbsp; Mobile: NIM + Nama</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-branch w-100">
+                            <div class="flow-col">
+                                <span class="flow-col-title">Aplikasi Web</span>
+                                <div class="flow-node"><h6>Cek Akun (user_akses)</h6><p>Validasi username &amp; password</p></div>
+                                <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                                <div class="flow-node"><h6>Set Session</h6><p>user_id, username, user_role, role</p></div>
+                                <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                                <div class="flow-node"><h6>Redirect Sesuai Peran</h6><p>admin / staf_akademik / dosen / mahasiswa</p></div>
+                            </div>
+                            <div class="flow-col">
+                                <span class="flow-col-title">Aplikasi Mobile (API)</span>
+                                <div class="flow-node"><h6>Cek Mahasiswa</h6><p>Validasi NIM &amp; Nama</p></div>
+                                <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                                <div class="flow-node"><h6>Buat Token</h6><p>id | md5(nim + now)</p></div>
+                                <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                                <div class="flow-node"><h6>Simpan Hash SHA-256</h6><p>ke tabel personal_access_tokens</p></div>
+                                <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                                <div class="flow-node"><h6>Respons JSON</h6><p>{ message, token, user }</p></div>
+                            </div>
+                        </div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Selesai</div>
+                    </div>
                 </div>
-                <div class="col-lg-7">
-                    <div class="step-item">
-                        <div class="step-num">1</div>
-                        <div>
-                            <h6>Login sesuai peran</h6>
-                            <p>Admin, staf akademik, dosen masuk dengan akun web; mahasiswa login dengan NIM dan nama, baik di web maupun aplikasi mobile.</p>
+
+                <!-- 2. SELF-REPORT ABSENSI -->
+                <div class="tab-pane fade" id="flow-absensi" role="tabpanel">
+                    <div class="flow-wrap">
+                        <div class="flow-start"><i class="bi bi-play-fill me-1"></i>Buka Menu Absensi</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Pilih Pertemuan</h6><p>Matkul, dosen, tanggal, pertemuan_ke terisi otomatis</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Pilih Status</h6><p>Hadir / Izin / Sakit / Alfa + keterangan opsional</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Simpan</h6><p>POST /api/transaksi/absensi</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-decision"><h6>Validasi</h6><p>Data lengkap &amp; valid?</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Ya</span></div>
+                        <div class="flow-node"><h6>Absensi Berhasil Disimpan</h6><p>List direfresh otomatis</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Selesai</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Tidak</span></div>
+                        <div class="flow-node"><h6>Tampil Pesan Error</h6><p>Kembali ke form</p></div>
+                    </div>
+                </div>
+
+                <!-- 3. REKAP & NOTIFIKASI -->
+                <div class="tab-pane fade" id="flow-rekap" role="tabpanel">
+                    <div class="flow-wrap">
+                        <div class="flow-start"><i class="bi bi-play-fill me-1"></i>Dosen: Hitung Rekap</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Kelompokkan Data</h6><p>mahasiswa_id + nama_matkul + nama_dosen</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Hitung Kehadiran</h6><p>Total Hadir / Izin / Sakit / Alfa &amp; persentase</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Update rekap_absensi</h6><p>Simpan hasil per mahasiswa per jadwal</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-decision"><h6>Persentase &lt; 75%?</h6><p>Kehadiran di bawah ambang batas?</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Ya</span></div>
+                        <div class="flow-decision"><h6>Cek Duplikat</h6><p>Notifikasi dengan pesan sama sudah ada?</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Tidak ada</span></div>
+                        <div class="flow-node"><h6>Kirim Notifikasi</h6><p>Insert notifikasi_peringatan untuk mahasiswa</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Selesai</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Tidak / sudah ada</span></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Selesai (tanpa notifikasi)</div>
+                    </div>
+                </div>
+
+                <!-- 4. EVALUASI FUZZY -->
+                <div class="tab-pane fade" id="flow-fuzzy" role="tabpanel">
+                    <div class="flow-wrap">
+                        <div class="flow-start"><i class="bi bi-play-fill me-1"></i>Input Penilaian</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Variabel Input</h6><p>Kehadiran, nilai tugas, keaktifan diskusi (0–100)</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Fuzzifikasi</h6><p>Rendah (linier turun) • Sedang (segitiga) • Tinggi (linier naik)</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Inferensi 27 Rule</h6><p>α = min(μ kehadiran, μ tugas, μ keaktifan)</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Z = output(α)</h6><p>Tidak Lulus / Marginal / Lulus (monotonik naik)</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Defuzzifikasi Tsukamoto</h6><p>skor = Σ(αi × Zi) / Σαi</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-decision"><h6>Klasifikasi Skor</h6><p>Status kelulusan mahasiswa</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-branch w-100">
+                            <div class="flow-col">
+                                <span class="flow-col-title">Skor ≥ 65</span>
+                                <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Lulus</div>
+                            </div>
+                            <div class="flow-col">
+                                <span class="flow-col-title">Skor 45–64</span>
+                                <div class="flow-end"><i class="bi bi-dash-circle-fill me-1"></i>Marginal</div>
+                            </div>
+                            <div class="flow-col">
+                                <span class="flow-col-title">Skor &lt; 45</span>
+                                <div class="flow-end"><i class="bi bi-x-circle-fill me-1"></i>Tidak Lulus</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="step-item">
-                        <div class="step-num">2</div>
-                        <div>
-                            <h6>Kelola data &amp; KRS</h6>
-                            <p>Master data (mahasiswa, dosen, matkul, ruangan, jadwal) dikelola admin; mahasiswa mengajukan KRS dan melihat jadwal kuliah.</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">3</div>
-                        <div>
-                            <h6>Isi kehadiran</h6>
-                            <p>Mahasiswa mengisi absensi mandiri per pertemuan (Hadir/Izin/Sakit/Alfa) dengan memilih jadwal pertemuan yang tersedia.</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">4</div>
-                        <div>
-                            <h6>Hitung rekap &amp; notifikasi</h6>
-                            <p>Dosen menghitung rekap kehadiran; sistem otomatis mengirim notifikasi peringatan bila kehadiran di bawah 75%.</p>
-                        </div>
-                    </div>
-                    <div class="step-item">
-                        <div class="step-num">5</div>
-                        <div>
-                            <h6>Evaluasi fuzzy</h6>
-                            <p>Kehadiran, nilai tugas, dan keaktifan diproses dengan logika Fuzzy Tsukamoto menjadi skor dan status kelulusan.</p>
-                        </div>
+                </div>
+
+                <!-- 5. APLIKASI MOBILE -->
+                <div class="tab-pane fade" id="flow-mobile" role="tabpanel">
+                    <div class="flow-wrap">
+                        <div class="flow-start"><i class="bi bi-play-fill me-1"></i>SplashScreen → checkLogin()</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-decision"><h6>Token Tersimpan?</h6><p>Cek token di SharedPreferences</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Ya</span></div>
+                        <div class="flow-node"><h6>Home (3 Tab)</h6><p>Dashboard • Notifikasi • Profil</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-node"><h6>Fitur Mahasiswa</h6><p>KRS • Jadwal • Absensi • Rekap • Pembayaran • Nilai • Fuzzy</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Selesai</div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i><span class="flow-label">Tidak</span></div>
+                        <div class="flow-node"><h6>LoginScreen</h6><p>Masuk dengan NIM + Nama</p></div>
+                        <div class="flow-arrow"><i class="bi bi-arrow-down"></i></div>
+                        <div class="flow-end"><i class="bi bi-check-circle-fill me-1"></i>Kembali ke Home</div>
                     </div>
                 </div>
             </div>
@@ -499,20 +662,25 @@
                 <h2 class="section-title">Satu Backend, Dua Klien</h2>
                 <p class="section-sub">Web admin (Laravel + Blade) dan aplikasi mobile (Flutter) dilayani backend yang sama dengan API berautentikasi token.</p>
             </div>
-            <div class="bg-white border rounded-4 p-4 p-md-5 shadow-sm overflow-auto">
-                <pre class="mermaid">@verbatim
-flowchart LR
-    subgraph Klien
-        WEB["Web Admin (Blade)"]
-        MOBILE["Mobile Mahasiswa (Flutter)"]
-    end
-    NGROK{{"ngrok tunnel"}}
-    API["Laravel API (JSON)"]
-    DB[("MySQL - siakad")]
-    WEB --> API
-    MOBILE --> NGROK --> API
-    API --> DB
-                @endverbatim</pre>
+            <div class="bg-white border rounded-4 p-4 p-md-5 shadow-sm">
+                <div class="flow-arch">
+                    <div class="flow-arch-row">
+                        <div class="arch-node"><i class="bi bi-globe me-1"></i>Web Admin (Laravel + Blade)</div>
+                        <div class="arch-arrow"><i class="bi bi-arrow-right"></i></div>
+                        <div class="arch-node"><i class="bi bi-server me-1"></i>Laravel (Web + API)</div>
+                        <div class="arch-arrow"><i class="bi bi-arrow-right"></i></div>
+                        <div class="arch-node db"><i class="bi bi-database me-1"></i>MySQL — siakad</div>
+                    </div>
+                    <div class="flow-arch-row">
+                        <div class="arch-node"><i class="bi bi-phone me-1"></i>Mobile (Flutter)</div>
+                        <div class="arch-arrow"><i class="bi bi-arrow-right"></i></div>
+                        <div class="arch-node ngrok"><i class="bi bi-broadcast me-1"></i>ngrok tunnel</div>
+                        <div class="arch-arrow"><i class="bi bi-arrow-right"></i></div>
+                        <div class="arch-node"><i class="bi bi-braces me-1"></i>Laravel API (JSON)</div>
+                        <div class="arch-arrow"><i class="bi bi-arrow-right"></i></div>
+                        <div class="arch-node db"><i class="bi bi-database me-1"></i>MySQL — siakad</div>
+                    </div>
+                </div>
             </div>
             <div class="row g-3 mt-3">
                 <div class="col-md-6">
@@ -869,11 +1037,5 @@ flowchart LR
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
-    <script>
-        if (typeof mermaid !== 'undefined') {
-            mermaid.initialize({ startOnLoad: true, theme: 'base', themeVariables: { primaryColor: '#EFF6FF', primaryBorderColor: '#2563EB', lineColor: '#1D4ED8' } });
-        }
-    </script>
 </body>
 </html>
