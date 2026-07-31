@@ -500,7 +500,7 @@
                 <p class="section-sub">Web admin (Laravel + Blade) dan aplikasi mobile (Flutter) dilayani backend yang sama dengan API berautentikasi token.</p>
             </div>
             <div class="bg-white border rounded-4 p-4 p-md-5 shadow-sm overflow-auto">
-                <pre class="mermaid">
+                <pre class="mermaid">@verbatim
 flowchart LR
     subgraph Klien
         WEB["Web Admin (Blade)"]
@@ -512,7 +512,7 @@ flowchart LR
     WEB --> API
     MOBILE --> NGROK --> API
     API --> DB
-                </pre>
+                @endverbatim</pre>
             </div>
             <div class="row g-3 mt-3">
                 <div class="col-md-6">
