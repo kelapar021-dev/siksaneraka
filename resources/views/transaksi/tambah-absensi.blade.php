@@ -53,6 +53,19 @@
 
         @csrf
 
+        @php $role = session('role', 'mahasiswa'); @endphp
+
+        @if($role === 'mahasiswa')
+
+        <div style="background:rgba(67,233,123,0.15);border:1px solid rgba(67,233,123,0.3);color:#43e97b;padding:12px 16px;border-radius:10px;margin-bottom:15px;font-size:13px;">
+            Anda mengisi absensi atas nama Anda sendiri
+            ({{ $mahasiswa->first()->nim ?? '' }} - {{ $mahasiswa->first()->nama ?? '' }}).
+        </div>
+
+        <input type="hidden" name="mahasiswa_id" value="{{ session('mahasiswa_id') }}">
+
+        @else
+
         <label>Mahasiswa</label>
 
         <select name="mahasiswa_id" class="form-select" required>
@@ -68,6 +81,8 @@
             @endforeach
 
         </select>
+
+        @endif
 
         <label>Tanggal</label>
 

@@ -71,7 +71,6 @@ Route::middleware('cek.akses')->group(function () {
     Route::post('transaksi/absensi/store',       [TransaksiController::class, 'storeAbsensi'])->name('transaksi.absensi.store');
     Route::get('transaksi/absensi/edit/{id}',    [TransaksiController::class, 'editAbsensi'])->name('transaksi.absensi.edit');
     Route::post('transaksi/absensi/update/{id}', [TransaksiController::class, 'updateAbsensi'])->name('transaksi.absensi.update');
-
     // FUZZY EVALUASI
     Route::get('fuzzy/definisi',              [FuzzyController::class, 'definisi'])->name('fuzzy.definisi');
     Route::get('fuzzy/evaluasi',              [FuzzyController::class, 'index'])->name('fuzzy.index');
@@ -134,6 +133,9 @@ Route::middleware('cek.akses:admin,dosen,staf_akademik')->group(function () {
     Route::post('notifikasi/store',       [NotifikasiController::class, 'store'])->name('notifikasi.store');
     Route::get('notifikasi/edit/{id}',    [NotifikasiController::class, 'edit'])->name('notifikasi.edit');
     Route::post('notifikasi/update/{id}', [NotifikasiController::class, 'update'])->name('notifikasi.update');
+
+    // REKAP ABSENSI (dosen/admin menghitung rekap dari isian mahasiswa)
+    Route::post('transaksi/absensi/hitung-rekap', [TransaksiController::class, 'hitungRekap'])->name('transaksi.absensi.hitung-rekap');
 });
 
 // ================= ADMIN ONLY =================

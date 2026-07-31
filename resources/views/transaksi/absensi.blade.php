@@ -310,6 +310,8 @@
 
 <div class="main-card">
 
+    @php $role = session('role', 'mahasiswa'); @endphp
+
     @if(session('success'))
     <div class="alert alert-success mb-4">
         {{ session('success') }}
@@ -359,12 +361,24 @@
                 placeholder="🔍 Cari data..."
             >
 
-            @if($role !== 'mahasiswa')
+            @if($role === 'dosen' || $role === 'admin')
+            <form
+                action="{{ route('transaksi.absensi.hitung-rekap') }}"
+                method="POST"
+                onsubmit="return confirm('Hitung rekap absensi sekarang?')"
+            >
+                @csrf
+                <button type="submit" class="btn-tambah" style="background:linear-gradient(135deg,#4facfe,#38f9d7);">
+                    <i class="bi bi-calculator"></i>
+                    Hitung Rekap
+                </button>
+            </form>
+            @endif
+
             <a href="{{ route('transaksi.absensi.create') }}" class="btn-tambah">
                 <i class="bi bi-plus-circle"></i>
-                Tambah Absensi
+                {{ $role === 'mahasiswa' ? 'Isi Absensi Saya' : 'Tambah Absensi' }}
             </a>
-            @endif
 
         </div>
 

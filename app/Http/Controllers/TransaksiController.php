@@ -222,17 +222,31 @@ class TransaksiController extends Controller
 
     public function absensi()
     {
-        $data = DB::table('transaksi_absensi')
+        $query = DB::table('transaksi_absensi')
             ->join('mahasiswa', 'transaksi_absensi.mahasiswa_id', '=', 'mahasiswa.id')
-            ->select('transaksi_absensi.*', 'mahasiswa.nama', 'mahasiswa.nim')
-            ->get();
+            ->select('transaksi_absensi.*', 'mahasiswa.nama', 'mahasiswa.nim');
 
-        return view('transaksi.absensi', compact('data'));
+        if (session('user_role') === 'mahasiswa') {
+            $query->where('transaksi_absensi.mahasiswa_id', session('mahasiswa_id'));
+        }
+
+        $data = $query->get();
+        $role = session('role', 'mahasiswa');
+
+        return view('transaksi.absensi', compact('data', 'role'));
     }
 
     public function createAbsensi()
     {
-        $mahasiswa = DB::table('mahasiswa')->get();
+        $role = session('role', 'mahasiswa');
+
+        if ($role === 'mahasiswa') {
+            $mahasiswa = DB::table('mahasiswa')
+                ->where('id', session('mahasiswa_id'))
+                ->get();
+        } else {
+            $mahasiswa = DB::table('mahasiswa')->get();
+        }
 
         $pertemuan = DB::table('pertemuan')
             ->join('jadwal_kuliah', 'pertemuan.jadwal_id', '=', 'jadwal_kuliah.id')
@@ -241,16 +255,20 @@ class TransaksiController extends Controller
             ->orderBy('pertemuan.pertemuan_ke')
             ->get();
 
-        return view('transaksi.tambah-absensi', compact('mahasiswa', 'pertemuan'));
+        return view('transaksi.tambah-absensi', compact('mahasiswa', 'pertemuan', 'role'));
     }
 
    public function storeAbsensi(Request $request)
 {
-    if (session('user_role') === 'mahasiswa') abort(403);
+    $role = session('role', 'mahasiswa');
+
+    $mahasiswaId = $role === 'mahasiswa'
+        ? session('mahasiswa_id')
+        : $request->mahasiswa_id;
 
     DB::table('transaksi_absensi')->insert([
 
-        'mahasiswa_id' => $request->mahasiswa_id,
+        'mahasiswa_id' => $mahasiswaId,
 
         'nama_matkul' => $request->nama_matkul,
 
@@ -264,10 +282,120 @@ class TransaksiController extends Controller
 
         'keterangan' => $request->keterangan,
 
+        'created_at' => now(),
+
+        'updated_at' => now(),
+
     ]);
 
-    return redirect()->route('transaksi.absensi');
+    return redirect()->route('transaksi.absensi')
+        ->with('success', 'Data absensi berhasil disimpan!');
 }
+
+    public function hitungRekap()
+    {
+        $role = session('role');
+
+        if (!in_array($role, ['dosen', 'admin'])) {
+            return redirect()->route('transaksi.absensi')
+                ->with('error', 'Anda tidak memiliki akses untuk menghitung rekap!');
+        }
+
+        $dosenNama = $role === 'dosen' ? session('username') : null;
+
+        $query = DB::table('transaksi_absensi');
+        if ($dosenNama) {
+            $query->where('nama_dosen', $dosenNama);
+        }
+
+        $rows = $query->get();
+
+        $groups = $rows->groupBy(function ($r) {
+            return $r->mahasiswa_id . '|' . $r->nama_matkul . '|' . $r->nama_dosen;
+        });
+
+        $notifDikirim = 0;
+
+        foreach ($groups as $key => $items) {
+            [$mahasiswaId, $namaMatkul, $namaDosen] = explode('|', $key);
+
+            $hadir = $items->where('status_hadir', 'Hadir')->count();
+            $izin  = $items->where('status_hadir', 'Izin')->count();
+            $sakit = $items->where('status_hadir', 'Sakit')->count();
+            $alpha = $items->where('status_hadir', 'Alfa')->count();
+            $total = $items->count();
+            $persentase = $total > 0 ? round(($hadir / $total) * 100, 2) : 0;
+
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->join('dosen as d', 'j.dosen_id', '=', 'd.id')
+                ->where('mk.nama', $namaMatkul)
+                ->where('d.nama', $namaDosen)
+                ->select('j.id')
+                ->first();
+
+            if (!$jadwal) {
+                $jadwal = DB::table('jadwal_kuliah as j')
+                    ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                    ->where('mk.nama', $namaMatkul)
+                    ->select('j.id')
+                    ->first();
+            }
+
+            if (!$jadwal) continue;
+
+            $jadwalId = $jadwal->id;
+
+            $data = [
+                'total_hadir'      => $hadir,
+                'total_izin'       => $izin,
+                'total_sakit'      => $sakit,
+                'total_alpha'      => $alpha,
+                'persentase_hadir' => $persentase,
+                'updated_at'       => now(),
+            ];
+
+            $existing = DB::table('rekap_absensi')
+                ->where('mahasiswa_id', $mahasiswaId)
+                ->where('jadwal_id', $jadwalId)
+                ->first();
+
+            if ($existing) {
+                DB::table('rekap_absensi')->where('id', $existing->id)->update($data);
+            } else {
+                DB::table('rekap_absensi')->insert(array_merge($data, [
+                    'mahasiswa_id' => $mahasiswaId,
+                    'jadwal_id'    => $jadwalId,
+                    'created_at'   => now(),
+                ]));
+            }
+
+            if ($persentase < 75) {
+                $pesan = "Peringatan! Kehadiran Anda pada mata kuliah {$namaMatkul} hanya {$persentase}%. Minimal kehadiran adalah 75%.";
+                $sudahAda = DB::table('notifikasi_peringatan')
+                    ->where('mahasiswa_id', $mahasiswaId)
+                    ->where('jadwal_id', $jadwalId)
+                    ->where('pesan', $pesan)
+                    ->exists();
+
+                if (!$sudahAda) {
+                    DB::table('notifikasi_peringatan')->insert([
+                        'mahasiswa_id'  => $mahasiswaId,
+                        'jadwal_id'     => $jadwalId,
+                        'pesan'         => $pesan,
+                        'tanggal_kirim' => now(),
+                        'status_baca'   => 'Belum',
+                        'created_at'    => now(),
+                        'updated_at'    => now(),
+                    ]);
+                    $notifDikirim++;
+                }
+            }
+        }
+
+        return redirect()->route('transaksi.absensi')
+            ->with('success', "Rekap absensi berhasil dihitung ({$groups->count()} kelompok). Notifikasi peringatan terkirim: {$notifDikirim}.");
+    }
 
     public function editAbsensi($id)
     {
