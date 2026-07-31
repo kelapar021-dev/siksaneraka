@@ -224,17 +224,26 @@ class TransaksiController extends Controller
     {
         $role = session('user_role', 'mahasiswa');
 
-        $query = DB::table('transaksi_absensi')
-            ->join('mahasiswa', 'transaksi_absensi.mahasiswa_id', '=', 'mahasiswa.id')
-            ->select('transaksi_absensi.*', 'mahasiswa.nama', 'mahasiswa.nim');
+        $query = DB::table('transaksi_absensi as t')
+            ->join('mahasiswa as m', 't.mahasiswa_id', '=', 'm.id')
+            ->select(
+                't.*',
+                'm.nama',
+                'm.nim',
+                DB::raw("(SELECT k.semester FROM krs k
+                    JOIN jadwal_kuliah j ON j.id = k.jadwal_id
+                    JOIN mata_kuliah mk ON mk.id = j.mata_kuliah_id
+                    WHERE k.mahasiswa_id = t.mahasiswa_id AND mk.nama = t.nama_matkul
+                    LIMIT 1) as semester")
+            );
 
         if ($role === 'mahasiswa') {
-            $query->where('transaksi_absensi.mahasiswa_id', session('mahasiswa_id'));
+            $query->where('t.mahasiswa_id', session('mahasiswa_id'));
         } elseif ($role === 'dosen') {
-            $query->where('transaksi_absensi.nama_dosen', session('username'));
+            $query->where('t.nama_dosen', session('username'));
         }
 
-        $data = $query->orderByDesc('transaksi_absensi.created_at')->get();
+        $data = $query->orderByDesc('t.created_at')->get();
 
         return view('transaksi.absensi', compact('data', 'role'));
     }
