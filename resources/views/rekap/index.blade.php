@@ -110,6 +110,7 @@
         }
         .role-admin     { background: #fbbf24; color: #78350f; }
         .role-dosen     { background: #34d399; color: #064e3b; }
+        .role-staf      { background: #a5b4fc; color: #312e81; }
         .role-mahasiswa { background: var(--blue-400); color: var(--blue-900); }
         .btn-logout-sb {
             display: flex; align-items: center; justify-content: center; gap: 7px;
@@ -298,9 +299,10 @@
             <span class="badge-role-sb
                 @if($role=='admin') role-admin
                 @elseif($role=='dosen') role-dosen
+                @elseif($role=='staf_akademik') role-staf
                 @else role-mahasiswa @endif">
-                @if($role=='admin')👑@elseif($role=='dosen')🎓@else📚@endif
-                {{ strtoupper($role) }}
+                @if($role=='admin')👑@elseif($role=='dosen')🎓@elseif($role=='staf_akademik')🛡️@else📚@endif
+                {{ $role=='staf_akademik' ? 'STAF' : strtoupper($role) }}
             </span>
         </div>
         <a href="{{ route('logout') }}" class="btn-logout-sb">
@@ -346,6 +348,11 @@
                 <i class="bi bi-info-circle-fill"></i>
                 Sebagai <strong>Mahasiswa</strong>, Anda melihat rekap kehadiran dan nilai Anda sendiri (KHS/Transkrip).
             </div>
+            @elseif($role == 'staf_akademik')
+            <div class="info-note info-blue">
+                <i class="bi bi-info-circle-fill"></i>
+                Sebagai <strong>Staf TU</strong>, Anda dapat melihat rekap absensi seluruh mahasiswa (membantu dosen).
+            </div>
             @endif
 
             {{-- Header Card --}}
@@ -362,12 +369,14 @@
                         <span class="badge-role-bar
                             @if($role=='admin') role-admin
                             @elseif($role=='dosen') role-dosen
+                            @elseif($role=='staf_akademik') role-staf
                             @else role-mahasiswa @endif">
-                            @if($role=='admin')👑@elseif($role=='dosen')🎓@else📚@endif
-                            {{ strtoupper($role) }}
+                            @if($role=='admin')👑@elseif($role=='dosen')🎓@elseif($role=='staf_akademik')🛡️@else📚@endif
+                            {{ $role=='staf_akademik' ? 'STAF' : strtoupper($role) }}
                         </span>
                         @if($role=='admin') Semua Rekap (R)
                         @elseif($role=='dosen') Rekap Kelas Sendiri (R)
+                        @elseif($role=='staf_akademik') Semua Rekap (R)
                         @else KHS / Transkrip (R)
                         @endif
                     </div>
@@ -385,12 +394,12 @@
                     <thead>
                         <tr>
                             <th style="width: 50px;">No</th>
-                            @if(in_array($role, ['admin', 'dosen']))
+                            @if(in_array($role, ['admin', 'dosen', 'staf_akademik']))
                             <th>NIM</th>
                             <th>Nama Mahasiswa</th>
                             @endif
                             <th>Mata Kuliah</th>
-                            @if(in_array($role, ['admin', 'dosen']))
+                            @if(in_array($role, ['admin', 'dosen', 'staf_akademik']))
                             <th>Dosen</th>
                             @endif
                             <th style="width: 70px;">Hadir</th>
@@ -406,14 +415,14 @@
                         <tr>
                             <td style="color:var(--gray-400); font-weight: 500;">{{ $loop->iteration }}</td>
 
-                            @if(in_array($role, ['admin', 'dosen']))
+                            @if(in_array($role, ['admin', 'dosen', 'staf_akademik']))
                             <td><span class="badge-nim">{{ $item->nim }}</span></td>
                             <td style="font-weight:600; color:var(--blue-900); text-align: left;">{{ $item->nama_mahasiswa }}</td>
                             @endif
 
                             <td style="text-align: left;">{{ $item->nama_matkul }}</td>
 
-                            @if(in_array($role, ['admin', 'dosen']))
+                            @if(in_array($role, ['admin', 'dosen', 'staf_akademik']))
                             <td style="text-align: left;">{{ $item->nama_dosen }}</td>
                             @endif
 
@@ -442,7 +451,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ in_array($role, ['admin','dosen']) ? 11 : 8 }}">
+                            <td colspan="{{ in_array($role, ['admin','dosen','staf_akademik']) ? 11 : 8 }}">
                                 <div class="empty-state">
                                     <i class="bi bi-inbox"></i>
                                     <p>Belum ada data rekap</p>

@@ -41,6 +41,7 @@
         .badge-role-sb{margin-left:auto;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap;}
         .role-admin{background:#fbbf24;color:#78350f;}
         .role-dosen{background:#34d399;color:#064e3b;}
+        .role-staf{background:#a5b4fc;color:#312e81;}
         .role-mahasiswa{background:var(--blue-400);color:var(--blue-900);}
         .btn-logout-sb{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px;border:none;border-radius:var(--radius-sm);background:rgba(239,68,68,.15);color:#fca5a5;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .18s;}
         .btn-logout-sb:hover{background:rgba(239,68,68,.3);color:#fca5a5;}
@@ -84,6 +85,12 @@
         /* Empty state */
         .empty-state{text-align:center;padding:60px 20px;color:var(--gray-400);}
         .empty-state i{font-size:48px;margin-bottom:12px;display:block;color:var(--gray-200);}
+
+        /* Header actions */
+        .btn-kirim{background:var(--blue-600);border:none;color:#fff;padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .15s;}
+        .btn-kirim:hover{background:var(--blue-700);color:#fff;}
+        .btn-edit-notif{background:var(--white);border:1px solid var(--gray-200);color:var(--blue-700);padding:7px 13px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:background .15s,border-color .15s;}
+        .btn-edit-notif:hover{background:var(--blue-50);border-color:var(--blue-200);}
 
         /* Admin separator */
         .nav-admin-divider{margin:8px 16px 0;border:none;border-top:1px solid rgba(255,255,255,.08);}
@@ -162,9 +169,10 @@
             <span class="badge-role-sb
                 @if($role=='admin') role-admin
                 @elseif($role=='dosen') role-dosen
+                @elseif($role=='staf_akademik') role-staf
                 @else role-mahasiswa @endif">
-                @if($role=='admin')👑@elseif($role=='dosen')🎓@else📚@endif
-                {{ strtoupper($role) }}
+                @if($role=='admin')👑@elseif($role=='dosen')🎓@elseif($role=='staf_akademik')🛡️@else📚@endif
+                {{ $role=='staf_akademik' ? 'STAF' : strtoupper($role) }}
             </span>
         </div>
         <a href="{{ route('logout') }}" class="btn-logout-sb">
@@ -193,6 +201,11 @@
                     <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>
                     Daftar Peringatan Absensi
                 </h5>
+                @if(in_array($role, ['dosen', 'staf_akademik']))
+                <a href="{{ route('notifikasi.create') }}" class="btn-kirim">
+                    <i class="bi bi-plus-circle"></i> Kirim Notifikasi
+                </a>
+                @endif
             </div>
 
             @forelse($notifikasi as $item)
@@ -217,6 +230,11 @@
                 @if($item->status_baca == 'Belum')
                 <a href="{{ route('notifikasi.baca', $item->id) }}" class="btn-baca">
                     <i class="bi bi-check2-square"></i> Tandai Dibaca
+                </a>
+                @endif
+                @if(in_array($role, ['dosen', 'staf_akademik']))
+                <a href="{{ route('notifikasi.edit', $item->id) }}" class="btn-edit-notif">
+                    <i class="bi bi-pencil"></i> Edit
                 </a>
                 @endif
             </div>

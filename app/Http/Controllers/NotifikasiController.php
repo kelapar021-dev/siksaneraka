@@ -101,15 +101,37 @@ class NotifikasiController extends Controller
     {
         if (session('user_role') === 'admin') abort(403);
 
-        $mahasiswa = DB::table('mahasiswa')->get();
+        $dosenId = session('dosen_id');
 
-        $jadwal = DB::table('jadwal_kuliah as j')
-            ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
-            ->select(
-                'j.id',
-                'mk.nama as nama_matkul'
-            )
-            ->get();
+        if (session('user_role') === 'dosen') {
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->where('j.dosen_id', $dosenId)
+                ->select('j.id', 'mk.nama as nama_matkul')
+                ->orderBy('mk.nama')
+                ->get();
+
+            $jadwalIds = $jadwal->pluck('id');
+
+            $mahasiswa = DB::table('krs as k')
+                ->join('mahasiswa as m', 'k.mahasiswa_id', '=', 'm.id')
+                ->whereIn('k.jadwal_id', $jadwalIds)
+                ->where('k.status', 'Disetujui')
+                ->select('m.id', 'm.nim', 'm.nama')
+                ->distinct()
+                ->orderBy('m.nama')
+                ->get();
+        } else {
+            $mahasiswa = DB::table('mahasiswa')
+                ->orderBy('nama')
+                ->get();
+
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->select('j.id', 'mk.nama as nama_matkul')
+                ->orderBy('mk.nama')
+                ->get();
+        }
 
         return view('notifikasi.create', compact(
             'mahasiswa',
@@ -139,19 +161,41 @@ class NotifikasiController extends Controller
     {
         if (session('user_role') === 'admin') abort(403);
 
+        $dosenId = session('dosen_id');
+
+        if (session('user_role') === 'dosen') {
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->where('j.dosen_id', $dosenId)
+                ->select('j.id', 'mk.nama as nama_matkul')
+                ->orderBy('mk.nama')
+                ->get();
+
+            $jadwalIds = $jadwal->pluck('id');
+
+            $mahasiswa = DB::table('krs as k')
+                ->join('mahasiswa as m', 'k.mahasiswa_id', '=', 'm.id')
+                ->whereIn('k.jadwal_id', $jadwalIds)
+                ->where('k.status', 'Disetujui')
+                ->select('m.id', 'm.nim', 'm.nama')
+                ->distinct()
+                ->orderBy('m.nama')
+                ->get();
+        } else {
+            $mahasiswa = DB::table('mahasiswa')
+                ->orderBy('nama')
+                ->get();
+
+            $jadwal = DB::table('jadwal_kuliah as j')
+                ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
+                ->select('j.id', 'mk.nama as nama_matkul')
+                ->orderBy('mk.nama')
+                ->get();
+        }
+
         $notifikasi = DB::table('notifikasi_peringatan')
             ->where('id', $id)
             ->first();
-
-        $mahasiswa = DB::table('mahasiswa')->get();
-
-        $jadwal = DB::table('jadwal_kuliah as j')
-            ->join('mata_kuliah as mk', 'j.mata_kuliah_id', '=', 'mk.id')
-            ->select(
-                'j.id',
-                'mk.nama as nama_matkul'
-            )
-            ->get();
 
         return view('notifikasi.edit', compact(
             'notifikasi',
@@ -167,6 +211,8 @@ class NotifikasiController extends Controller
         DB::table('notifikasi_peringatan')
             ->where('id', $id)
             ->update([
+                'mahasiswa_id' => $request->mahasiswa_id,
+                'jadwal_id'    => $request->jadwal_id,
                 'pesan' => $request->pesan,
                 'updated_at' => now(),
             ]);
